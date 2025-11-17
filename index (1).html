@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRI SIVAM STORES - ஸ்ரீ சிவம் ஸ்டோர்ஸ்</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1><i class="fas fa-store"></i> <span data-i18n="store-title">துறை கடை</span></h1>
+            <div class="header-buttons">
+                <button class="btn btn-lang" onclick="toggleLanguage()">
+                    <i class="fas fa-language"></i> <span data-i18n="lang-toggle">English</span>
+                </button>
+                <button class="btn btn-primary" onclick="showManageMenu()">
+                    <i class="fas fa-cog"></i> <span data-i18n="manage-menu">மெனு நிர்வகிக்க</span>
+                </button>
+                <button class="btn btn-secondary" onclick="showSalesReport()">
+                    <i class="fas fa-chart-line"></i> <span data-i18n="sales-report">மாதாந்திர அறிக்கை</span>
+                </button>
+                <button class="btn btn-info" onclick="showDailyStockReport()">
+                    <i class="fas fa-boxes"></i> <span data-i18n="daily-stock">தினசரி பங்கு அறிக்கை</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Menu Section -->
+            <section id="menu-section" class="menu-section">
+                <div class="section-header">
+                    <h2 data-i18n="products">பொருட்கள்</h2>
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="search-input" data-i18n-placeholder="search-placeholder" placeholder="பொருட்களைத் தேடுங்கள்..." oninput="filterMenuItems()" onkeyup="filterMenuItems()">
+                        <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="menu-grid" class="menu-grid">
+                    <!-- Menu items will be dynamically added here -->
+                </div>
+                <div id="no-results" class="no-results" style="display: none;">
+                    <i class="fas fa-search"></i>
+                    <p data-i18n="no-results">பொருட்கள் கிடைக்கவில்லை</p>
+                </div>
+            </section>
+
+            <!-- Cart Section -->
+            <aside id="cart-section" class="cart-section">
+                <h2><i class="fas fa-shopping-cart"></i> <span data-i18n="cart">வண்டி</span></h2>
+                <div id="cart-items" class="cart-items">
+                    <p class="empty-cart" data-i18n="empty-cart">வண்டி காலியாக உள்ளது</p>
+                </div>
+                <div class="cart-summary">
+                    <div class="total">
+                        <strong data-i18n="total">மொத்தம்</strong>: ₹<span id="total-amount">0</span>
+                    </div>
+                    <div class="cart-actions">
+                        <button class="btn btn-danger" onclick="clearCart()">
+                            <i class="fas fa-trash"></i> <span data-i18n="clear-cart">வண்டியை அழிக்க</span>
+                        </button>
+                        <button class="btn btn-success" onclick="generateBill()">
+                            <i class="fas fa-receipt"></i> <span data-i18n="print-bill">பில் அச்சிடு</span>
+                        </button>
+                        <button class="btn btn-whatsapp" onclick="shareOnWhatsApp()">
+                            <i class="fab fa-whatsapp"></i> <span data-i18n="share-whatsapp">WhatsApp இல் பகிர்</span>
+                        </button>
+                        <button class="btn btn-pay" onclick="showPayment()">
+                            <i class="fas fa-qrcode"></i> <span data-i18n="pay-now">இப்போது செலுத்த</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Payment Modal -->
+        <div id="payment-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePayment()">&times;</span>
+                <h2 data-i18n="make-payment">கட்டணம் செலுத்த</h2>
+                <p class="payment-amount"><span data-i18n="total-amount">மொத்த தொகை</span>: ₹<span id="payment-amount">0</span></p>
+                
+                <div class="payment-options">
+                    <div class="payment-tabs">
+                        <button class="payment-tab active" onclick="showPaymentTab('qr')">
+                            <i class="fas fa-qrcode"></i> QR Code
+                        </button>
+                        <button class="payment-tab" onclick="showPaymentTab('upi')">
+                            <i class="fas fa-mobile-alt"></i> UPI Links
+                        </button>
+                    </div>
+                    
+                    <div id="qr-payment-tab" class="payment-tab-content active">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0;">QR Code</h4>
+                            <button class="btn btn-sm btn-secondary" onclick="showQRSettings()" style="padding: 5px 10px; font-size: 0.9em;">
+                                <i class="fas fa-cog"></i> <span data-i18n="settings">Settings</span>
+                            </button>
+                        </div>
+                        <div id="qr-code-container"></div>
+                    </div>
+                    
+                    <div id="upi-payment-tab" class="payment-tab-content">
+                        <div class="upi-section">
+                            <div class="upi-input-group">
+                                <label data-i18n="upi-id">UPI ID</label>
+                                <div class="upi-input-wrapper">
+                                    <input type="text" id="upi-id-input" placeholder="yourname@paytm" value="departmentalstore@paytm">
+                                    <button class="btn btn-sm btn-secondary" onclick="copyUPIId()">
+                                        <i class="fas fa-copy"></i> <span data-i18n="copy-upi">Copy</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="upi-links">
+                                <h4 data-i18n="pay-via-upi">Pay via UPI</h4>
+                                <div class="upi-buttons">
+                                    <button class="upi-link-btn paytm-btn" onclick="openUPILink('paytm')">
+                                        <i class="fab fa-paypal"></i>
+                                        <span data-i18n="paytm">Paytm</span>
+                                    </button>
+                                    <button class="upi-link-btn phonepe-btn" onclick="openUPILink('phonepe')">
+                                        <i class="fas fa-mobile-alt"></i>
+                                        <span data-i18n="phonepe">PhonePe</span>
+                                    </button>
+                                    <button class="upi-link-btn gpay-btn" onclick="openUPILink('gpay')">
+                                        <i class="fab fa-google-pay"></i>
+                                        <span data-i18n="gpay">Google Pay</span>
+                                    </button>
+                                    <button class="upi-link-btn other-upi-btn" onclick="openUPILink('other')">
+                                        <i class="fas fa-wallet"></i>
+                                        <span data-i18n="other-upi">Other UPI</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="closePayment()"><span data-i18n="close">மூடு</span></button>
+            </div>
+        </div>
+
+        <!-- Manage Menu Modal -->
+        <div id="manage-menu-modal" class="modal">
+            <div class="modal-content large">
+                <span class="close" onclick="closeManageMenu()">&times;</span>
+                <h2 data-i18n="manage-menu">மெனு நிர்வகிக்க</h2>
+                <div class="manage-menu-form">
+                    <h3 data-i18n="add-new-item">புதிய பொருள் சேர்க்க</h3>
+                    <input type="text" id="item-name" data-i18n-placeholder="item-name-placeholder" placeholder="பொருள் பெயர்">
+                    <input type="number" id="item-price" data-i18n-placeholder="item-price-placeholder" placeholder="விலை (₹)" step="0.01">
+                    <div class="stock-input-group">
+                        <input type="number" id="item-stock" data-i18n-placeholder="stock-quantity" placeholder="பங்கு அளவு" min="0" step="0.01">
+                        <select id="item-unit" data-i18n-placeholder="select-unit">
+                            <option value="units" data-i18n="units">அலகுகள்</option>
+                            <option value="grams" data-i18n="grams">கிராம் (g)</option>
+                            <option value="kg" data-i18n="kg">கிலோகிராம் (kg)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="image-upload-section">
+                        <label class="upload-label" for="item-image-upload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span data-i18n="upload-image">படத்தை பதிவேற்று</span>
+                        </label>
+                        <input type="file" id="item-image-upload" accept="image/*" onchange="handleImageUpload(event)" style="display: none;">
+                        <div id="image-preview-container" style="display: none; margin-top: 10px;">
+                            <img id="image-preview" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="clearImageUpload()" style="margin-top: 5px;">
+                                <i class="fas fa-times"></i> Remove
+                            </button>
+                        </div>
+                        <div class="image-divider">
+                            <span data-i18n="or">அல்லது</span>
+                        </div>
+                        <input type="url" id="item-image" data-i18n-placeholder="image-url" placeholder="படத்தின் URL">
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="addMenuItem()"><span data-i18n="add">சேர்க்க</span></button>
+                </div>
+                <div class="menu-list">
+                    <h3 data-i18n="current-menu">தற்போதைய மெனு</h3>
+                    <div id="manage-menu-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Report Modal -->
+        <div id="sales-report-modal" class="modal">
+            <div class="modal-content large">
+                <span class="close" onclick="closeSalesReport()">&times;</span>
+                <h2 data-i18n="sales-report">மாதாந்திர விற்பனை அறிக்கை</h2>
+                <div class="report-filters">
+                    <label data-i18n="select-month">மாதம் தேர்ந்தெடுக்கவும்</label>:
+                    <input type="month" id="report-month" onchange="updateSalesReport()">
+                </div>
+                <div id="sales-report-content"></div>
+            </div>
+        </div>
+
+        <!-- Daily Stock Report Modal -->
+        <div id="daily-stock-modal" class="modal">
+            <div class="modal-content large">
+                <span class="close" onclick="closeDailyStockReport()">&times;</span>
+                <h2 data-i18n="daily-stock">தினசரி பங்கு அறிக்கை</h2>
+                <div class="report-filters">
+                    <label data-i18n="select-date">தேதியைத் தேர்ந்தெடுக்கவும்</label>:
+                    <input type="date" id="stock-date" onchange="updateDailyStockReport()">
+                </div>
+                <div id="daily-stock-content"></div>
+            </div>
+        </div>
+
+        <!-- QR Code Settings Modal -->
+        <div id="qr-settings-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeQRSettings()">&times;</span>
+                <h2 data-i18n="qr-settings">QR குறியீடு அமைப்புகள்</h2>
+                
+                <div class="manage-menu-form">
+                    <h3 data-i18n="custom-qr-code">தனிப்பயன் QR குறியீடு</h3>
+                    <p style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
+                        Upload your own QR code image to display instead of the auto-generated QR code.
+                    </p>
+                    
+                    <div class="image-upload-section">
+                        <label class="upload-label" for="qr-code-upload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span data-i18n="upload-qr-code">QR குறியீடு படத்தை பதிவேற்று</span>
+                        </label>
+                        <input type="file" id="qr-code-upload" accept="image/*" onchange="handleQRCodeUpload(event)" style="display: none;">
+                        <div id="qr-code-preview-container" style="display: none; margin-top: 15px; text-align: center;">
+                            <img id="qr-code-preview" src="" alt="QR Code Preview" style="max-width: 250px; max-height: 250px; border-radius: 8px; border: 2px solid #e0e0e0; margin-bottom: 10px;">
+                            <br>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeCustomQRCode()" id="remove-qr-btn" style="display: none;">
+                                <i class="fas fa-trash"></i> <span data-i18n="remove-qr-code">Remove Custom QR Code</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveQRCode()" style="margin-top: 15px; width: 100%;">
+                        <i class="fas fa-save"></i> Save QR Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
